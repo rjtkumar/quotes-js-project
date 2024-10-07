@@ -1,0 +1,4 @@
+We'll use thhe ibrary scrapy-playwright
+    > pip install scrapy-playwright
+Then install playwright / installs browsers
+    > playwright install
