@@ -13,8 +13,6 @@ class QuotesSpider(scrapy.Spider):
             "playwright_include_page" : True,
             "playwright_page_methods" : [
                 PageMethod("wait_for_selector", "div.quote"),
-                PageMethod("evaluate", "window.scrollBy(0, document.body.scrollHeight)"),
-                PageMethod("wait_for_selector", "div.quote:nth-child(11)")
             ],
             "errback" : self.errback
         })
@@ -22,27 +20,9 @@ class QuotesSpider(scrapy.Spider):
     async def parse(self, response):
         # now that we'll be scrapingg multiple pages we should also close pages to conserve memory
         page = response.meta["playwright_page"]
+        screenshot = await page.screenshot(path = "example.png", full_page = True)
         await page.close()
 
-        for quote in response.css("div.quote"):
-            quote_item = QuoteItem()
-            quote_item["text"] = quote.css("span.text::text").get()
-            quote_item["author"] = quote.css("small.author::text").get()
-            quote_item["tags"] = quote.css("div.tags a.tag::text").get()
-            yield quote_item
-        
-        # # getting the next page
-        # next_page = response.css(".next>a::attr(href)").get()
-        # if next_page is not None:
-        #     next_page_url = "https://quotes.toscrape.com" + next_page
-        #     yield scrapy.Request(next_page_url,meta={
-        #         "playwright": True,
-        #         "playwright_include_page" : True,
-        #         "playwright_Page_methods" : [
-        #             PageMethod("wait_for_selector", "div.quote")
-        #         ],
-        #         "errback" : self.errback
-        #     })
     
     async def errback (self, failure):
         page = failure.request.meta["playwright_page"]
